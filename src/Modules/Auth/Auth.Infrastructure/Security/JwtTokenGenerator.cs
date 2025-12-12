@@ -3,6 +3,8 @@ using System.Security.Claims;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using SharedKernel.Application.Interfaces;
+using Microsoft.Extensions.Options;
+using SharedKernel.Application.Options;
 
 namespace Auth.Infrastructure.Security;
 
@@ -12,20 +14,16 @@ namespace Auth.Infrastructure.Security;
 /// </summary>
 public class JwtTokenGenerator : IJwtTokenGenerator
 {
-    private readonly string _secretKey;
-    private readonly string _issuer;
-    private readonly string _audience;
+    private readonly JwtOptions _options;
 
-    public JwtTokenGenerator()
+    public JwtTokenGenerator(IOptions<JwtOptions> options)
     {
-        _secretKey = "dev-super-secret-key-change-in-prod-123!";
-        _issuer = "erp-modern-core";
-        _audience = "erp-modern-core-clients";
+        _options = options.Value;
     }
 
     public string GenerateToken(Guid userId, string username, string role)
     {
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_options.Key));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var claims = new[]
@@ -36,10 +34,10 @@ public class JwtTokenGenerator : IJwtTokenGenerator
         };
 
         var token = new JwtSecurityToken(
-            issuer: _issuer,
-            audience: _audience,
+            issuer: _options.Issuer,
+            audience: _options.Audience,
             claims: claims,
-            expires: DateTime.UtcNow.AddHours(8),
+            expires: DateTime.UtcNow.AddHours(_options.ExpirationHours),
             signingCredentials: creds
         );
 

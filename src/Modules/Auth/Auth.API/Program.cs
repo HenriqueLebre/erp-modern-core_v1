@@ -6,8 +6,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Microsoft.Extensions.Options;
+using SharedKernel.Application.Options;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configurar opções de JWT
+builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 // Add services to the container.
 builder.Services.AddControllers();
@@ -48,9 +53,8 @@ builder.Services.AddSwaggerGen(c =>
     });
 });
 
-var jwtKey = "dev-super-secret-key-change-in-prod-123!"; // depois vai pro appsettings/Secrets
-var jwtIssuer = "erp-modern-core";
-var jwtAudience = "erp-modern-core-clients";
+var jwtOptions = builder.Configuration.GetSection("Jwt").Get<JwtOptions>()
+    ?? throw new InvalidOperationException("Jwt options are not configured.");
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -61,12 +65,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            ValidIssuer = jwtIssuer,
-            ValidAudience = jwtAudience,
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey)),
+            ValidIssuer = jwtOptions.Issuer,
+            ValidAudience = jwtOptions.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtOptions.Key)),
             ClockSkew = TimeSpan.FromSeconds(30)
         };
     });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddAuthorization();
 

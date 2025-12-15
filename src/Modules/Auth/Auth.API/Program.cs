@@ -18,7 +18,7 @@ builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 builder.Services.AddControllers();
 
 // Infra + Application do módulo Auth
-builder.Services.AddAuthInfrastructure();
+builder.Services.AddAuthInfrastructure(builder.Configuration); 
 builder.Services.AddAuthApplication();
 
 // Swagger (para testar mais fácil)

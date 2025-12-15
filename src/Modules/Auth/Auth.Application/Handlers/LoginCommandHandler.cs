@@ -1,6 +1,6 @@
 ﻿using Auth.Application.Commands;
-using Auth.Domain.Interfaces;
-using Auth.Infrastructure.Security;
+using Auth.Application.Security;   // só para LegacySha256PasswordVerifier
+using Auth.Domain.Interfaces;      // aqui vem o IPasswordHasher correto
 using MediatR;
 using SharedKernel.Application.Interfaces;
 

@@ -1,5 +1,6 @@
 ﻿using Auth.Application.Commands;
 using Auth.Domain.Interfaces;
+using Auth.Infrastructure.Security;
 using MediatR;
 using SharedKernel.Application.Interfaces;
 
@@ -8,7 +9,7 @@ namespace Auth.Application.Handlers;
 public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IPasswordHasher _passwordHasher;
+    private readonly IPasswordHasher _passwordHasher; 
     private readonly IJwtTokenGenerator _jwtTokenGenerator;
 
     public LoginCommandHandler(
@@ -28,7 +29,35 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         if (user is null || !user.IsActive)
             return new LoginResponse(false, null, null, null, null, "Invalid credentials or inactive user.");
 
-        if (!_passwordHasher.VerifyPassword(user.PasswordHash, request.Password))
+        var storedHash = user.PasswordHash;
+        var providedPassword = request.Password;
+
+        // Detecta se é o formato novo
+        var isPbkdf2 = storedHash.StartsWith("pbkdf2$", StringComparison.OrdinalIgnoreCase);
+
+        bool passwordOk;
+
+        if (isPbkdf2)
+        {
+            // Novo: PBKDF2 (via IPasswordHasher)
+            passwordOk = _passwordHasher.VerifyPassword(storedHash, providedPassword);
+        }
+        else
+        {
+            // Legado: SHA256 Base64 (compatível com o PasswordHasher atual)
+            passwordOk = LegacySha256PasswordVerifier.Verify(storedHash, providedPassword);
+
+            // Migração automática: se o legado passar, rehash PBKDF2 e salva
+            if (passwordOk)
+            {
+                var newHash = _passwordHasher.HashPassword(providedPassword);
+                user.UpdatePasswordHash(newHash);
+
+                await _userRepository.UpdateAsync(user, cancellationToken);
+            }
+        }
+
+        if (!passwordOk)
             return new LoginResponse(false, null, null, null, null, "Invalid credentials.");
 
         var token = _jwtTokenGenerator.GenerateToken(user.Id, user.Username, user.Role);

@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
+using Microsoft.Extensions.Configuration;
 
 namespace Auth.Infrastructure.Persistence;
 
@@ -7,12 +8,18 @@ public sealed class AuthDbContextFactory : IDesignTimeDbContextFactory<AuthDbCon
 {
     public AuthDbContext CreateDbContext(string[] args)
     {
-        var optionsBuilder = new DbContextOptionsBuilder<AuthDbContext>();
+        // Lê appsettings.json manualmente (design-time)
+        var configuration = new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.Development.json", optional: true)
+            .AddEnvironmentVariables()
+            .Build();
 
-        // Connection string design-time (dev local)
-        optionsBuilder.UseNpgsql(
-            "Host=127.0.0.1;Port=5433;Database=erp_auth;Username=postgres;Password=postgres"
-        );
+        var connectionString = configuration.GetConnectionString("AuthDb");
+
+        var optionsBuilder = new DbContextOptionsBuilder<AuthDbContext>();
+        optionsBuilder.UseNpgsql(connectionString);
 
         return new AuthDbContext(optionsBuilder.Options);
     }

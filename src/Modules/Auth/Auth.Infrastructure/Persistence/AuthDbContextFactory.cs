@@ -8,15 +8,18 @@ public sealed class AuthDbContextFactory : IDesignTimeDbContextFactory<AuthDbCon
 {
     public AuthDbContext CreateDbContext(string[] args)
     {
-        // Lê appsettings.json manualmente (design-time)
+        // Caminho relativo do Infrastructure até o API (ajuste se necessário)
+        var apiProjectPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "Auth.API");
+
         var configuration = new ConfigurationBuilder()
-            .SetBasePath(Directory.GetCurrentDirectory())
+            .SetBasePath(apiProjectPath)
             .AddJsonFile("appsettings.json", optional: false)
             .AddJsonFile("appsettings.Development.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 
-        var connectionString = configuration.GetConnectionString("AuthDb");
+        var connectionString = configuration.GetConnectionString("AuthDb")
+            ?? throw new InvalidOperationException("ConnectionString 'AuthDb' not found.");
 
         var optionsBuilder = new DbContextOptionsBuilder<AuthDbContext>();
         optionsBuilder.UseNpgsql(connectionString);

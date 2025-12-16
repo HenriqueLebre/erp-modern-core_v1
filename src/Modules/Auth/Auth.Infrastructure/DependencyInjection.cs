@@ -5,6 +5,7 @@ using Auth.Infrastructure.Security;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SharedKernel.Application.Interfaces;
 
 namespace Auth.Infrastructure;
 
@@ -23,6 +24,9 @@ public static class DependencyInjection
 
         // Hasher de senha (PBKDF2 como padrão; legado é verificado no fluxo de login)
         services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
+
+        // Gerador de JWT
+        services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 
         return services;
     }

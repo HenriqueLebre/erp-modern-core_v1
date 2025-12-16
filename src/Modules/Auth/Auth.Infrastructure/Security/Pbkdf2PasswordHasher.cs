@@ -25,16 +25,16 @@ public sealed class Pbkdf2PasswordHasher : IPasswordHasher
         return $"{Prefix}${Iterations}${Convert.ToBase64String(salt)}${Convert.ToBase64String(hash)}";
     }
 
-    public bool VerifyPassword(string password, string passwordHash)
+    public bool VerifyPassword(string hashedPassword, string providedPassword)
     {
-        if (string.IsNullOrWhiteSpace(passwordHash))
+        if (string.IsNullOrWhiteSpace(hashedPassword))
             return false;
 
         // só valida PBKDF2 aqui
-        if (!passwordHash.StartsWith(Prefix + "$", StringComparison.OrdinalIgnoreCase))
+        if (!hashedPassword.StartsWith(Prefix + "$", StringComparison.OrdinalIgnoreCase))
             return false;
 
-        var parts = passwordHash.Split('$', 4);
+        var parts = hashedPassword.Split('$', 4);
         if (parts.Length != 4) return false;
 
         if (!int.TryParse(parts[1], out var iterations)) return false;
@@ -51,7 +51,7 @@ public sealed class Pbkdf2PasswordHasher : IPasswordHasher
         }
 
         var actualHash = Rfc2898DeriveBytes.Pbkdf2(
-            password: password,
+            password: providedPassword,
             salt: salt,
             iterations: iterations,
             hashAlgorithm: HashAlgorithmName.SHA256,

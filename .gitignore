@@ -40,7 +40,9 @@ tools/
 # User secrets
 **/secrets.json
 **/appsettings.Development.json
+**/appsettings.Example.json
 *.generated.json
+SECURITY.md
 
 # Publish
 publish/

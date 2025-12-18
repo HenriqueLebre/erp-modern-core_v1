@@ -8,20 +8,53 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 using SharedKernel.Application.Options;
+using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar opções de JWT
+// Configurar opï¿½ï¿½es de JWT
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
+
+// Rate limiting configuration
+builder.Services.AddMemoryCache();
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.EnableEndpointRateLimiting = true;
+    options.StackBlockedRequests = false;
+    options.HttpStatusCode = 429;
+    options.RealIpHeader = "X-Real-IP";
+    options.GeneralRules = new List<RateLimitRule>
+    {
+                new RateLimitRule
+        {
+            Endpoint = "POST:/auth/login",
+            Period = "1m",
+            Limit = 20 // 20 login attempts per minute per IP (demo mode)
+        },
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Period = "1m",
+            Limit = 30 // 30 requests per minute for all other endpoints
+        }
+    };
+});
+builder.Services.AddSingleton<IIpPolicyStore, MemoryCacheIpPolicyStore>();
+builder.Services.AddSingleton<IRateLimitCounterStore, MemoryCacheRateLimitCounterStore>();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();
+builder.Services.AddSingleton<IProcessingStrategy, AsyncKeyLockProcessingStrategy>();
 
 // Add services to the container.
 builder.Services.AddControllers();
 
-// Infra + Application do módulo Auth
+// Health checks (SQLite for demo)
+builder.Services.AddHealthChecks();
+
+// Infra + Application do mï¿½dulo Auth
 builder.Services.AddAuthInfrastructure(builder.Configuration); 
 builder.Services.AddAuthApplication();
 
-// Swagger (para testar mais fácil)
+// Swagger (para testar mais fï¿½cil)
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -74,11 +107,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
-builder.Services.AddAuthorization();
-
 var app = builder.Build();
 
-// SEED: criar usuário admin/admin em memória
+// SEED: criar usuï¿½rio admin/admin em memï¿½ria
 using (var scope = app.Services.CreateScope())
 {
     var userRepo = scope.ServiceProvider.GetRequiredService<IUserRepository>();
@@ -106,6 +137,21 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseHttpsRedirection();
+
+// Rate limiting middleware (must be before authentication)
+app.UseIpRateLimiting();
+
+// Health checks endpoints
+app.MapHealthChecks("/health");
+app.MapHealthChecks("/health/ready", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("ready")
+});
+app.MapHealthChecks("/health/live", new Microsoft.AspNetCore.Diagnostics.HealthChecks.HealthCheckOptions
+{
+    Predicate = _ => false // Only basic liveness check
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

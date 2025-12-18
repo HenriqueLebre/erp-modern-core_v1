@@ -3,6 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Options;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Auth.API.Controllers;
 
@@ -28,7 +31,7 @@ public class AuthController : ControllerBase
         return Ok(result);
     }
 
-    [Authorize]
+        [Authorize]
     [HttpGet("me")]
     public IActionResult Me()
     {
@@ -44,5 +47,57 @@ public class AuthController : ControllerBase
         var role = User.FindFirstValue(ClaimTypes.Role);
 
         return Ok(new { userId, username, role });
+    }
+
+    [HttpPost("validate")]
+    public IActionResult ValidateToken([FromBody] ValidateTokenRequest request)
+    {
+        if (string.IsNullOrWhiteSpace(request.Token))
+        {
+            return BadRequest(new { success = false, message = "Token is required" });
+        }
+
+        try
+        {
+            // Get JWT options from configuration
+            var jwtOptions = HttpContext.RequestServices.GetRequiredService<IOptions<SharedKernel.Application.Options.JwtOptions>>().Value;
+            
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = System.Text.Encoding.UTF8.GetBytes(jwtOptions.Key);
+            
+            var validationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = jwtOptions.Issuer,
+                ValidAudience = jwtOptions.Audience,
+                IssuerSigningKey = new SymmetricSecurityKey(key),
+                ClockSkew = TimeSpan.FromSeconds(30)
+            };
+
+                        var principal = tokenHandler.ValidateToken(request.Token, validationParameters, out SecurityToken validatedToken);
+            
+            var claims = principal.Claims.ToDictionary(c => c.Type, c => c.Value);
+                    
+            return Ok(new 
+            { 
+                success = true, 
+                valid = true,
+                userId = claims.GetValueOrDefault(ClaimTypes.NameIdentifier) ?? claims.GetValueOrDefault("sub"),
+                username = claims.GetValueOrDefault(ClaimTypes.Name) ?? claims.GetValueOrDefault("unique_name"),
+                role = claims.GetValueOrDefault(ClaimTypes.Role),
+                expires = claims.GetValueOrDefault("exp")
+            });
+        }
+        catch (SecurityTokenException ex)
+        {
+            return Ok(new { success = true, valid = false, message = "Token validation failed", error = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+        }
     }
 }

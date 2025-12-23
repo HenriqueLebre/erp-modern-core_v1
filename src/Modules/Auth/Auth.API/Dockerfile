@@ -17,19 +17,11 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Copy project files for restore (cache layer)
-COPY ["src/Modules/Auth/Auth.API/Auth.API.csproj", "Modules/Auth/Auth.API/"]
-COPY ["src/Modules/Auth/Auth.Application/Auth.Application.csproj", "Modules/Auth/Auth.Application/"]
-COPY ["src/Modules/Auth/Auth.Infrastructure/Auth.Infrastructure.csproj", "Modules/Auth/Auth.Infrastructure/"]
-COPY ["src/Modules/Auth/Auth.Domain/Auth.Domain.csproj", "Modules/Auth/Auth.Domain/"]
-COPY ["src/BuildingBlocks/SharedKernel.Application/SharedKernel.Application.csproj", "BuildingBlocks/SharedKernel.Application/"]
-COPY ["src/BuildingBlocks/SharedKernel.Domain/SharedKernel.Domain.csproj", "BuildingBlocks/SharedKernel.Domain/"]
+# Copy all source code first (simpler approach)
+COPY src/ .
 
 # Restore dependencies
 RUN dotnet restore "Modules/Auth/Auth.API/Auth.API.csproj"
-
-# Copy all source code
-COPY src/ .
 
 # Build
 WORKDIR "/src/Modules/Auth/Auth.API"

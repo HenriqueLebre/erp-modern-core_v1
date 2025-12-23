@@ -2,12 +2,7 @@
 -- PostgreSQL Initialization Script
 -- ==================================
 -- This script runs automatically when the container starts
-
--- Ensure database exists
-CREATE DATABASE IF NOT EXISTS erp_auth;
-
--- Connect to the database
-\c erp_auth;
+-- The database 'erp_auth' is already created by POSTGRES_DB env variable
 
 -- Enable extensions if needed
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

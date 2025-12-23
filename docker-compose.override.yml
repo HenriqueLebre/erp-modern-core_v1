@@ -1,0 +1,30 @@
+# ==================================
+# Docker Compose Override
+# For LOCAL DEVELOPMENT only
+# ==================================
+version: '3.8'
+
+services:
+  auth-api:
+    build:
+      args:
+        BUILD_CONFIGURATION: Debug
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+    volumes:
+      # Hot reload support (optional)
+      - ./src/Modules/Auth/Auth.API:/app:ro
+    ports:
+      - "5281:80"
+
+  postgres:
+    ports:
+      - "5433:5432"
+    # Development: expose more logs
+    command: 
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_connections=on"

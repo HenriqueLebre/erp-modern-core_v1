@@ -1,0 +1,59 @@
+# .NET build artifacts
+**/bin/
+**/obj/
+**/out/
+**/publish/
+
+# Visual Studio / Rider
+.vs/
+.idea/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.DotSettings.user
+
+# Tests
+**/TestResults/
+**/coverage/
+**/*.coverage
+**/*.coveragexml
+
+# Logs
+*.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+
+# Docker
+Dockerfile
+docker-compose*.yml
+.dockerignore
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+.nuget/
+
+# Secrets
+**/secrets.json
+**/appsettings.Development.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# CI/CD
+.github/
+.azure/

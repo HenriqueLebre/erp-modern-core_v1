@@ -1,0 +1,118 @@
+version: '3.8'
+
+# ==================================
+# SERVICES
+# ==================================
+services:
+  # ================================
+  # PostgreSQL Database
+  # ================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: erp-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: erp_auth
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d erp_auth"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - erp-network
+
+  # ================================
+  # Auth API (.NET 8)
+  # ================================
+  auth-api:
+    build:
+      context: .
+      dockerfile: src/Modules/Auth/Auth.API/Dockerfile
+      args:
+        BUILD_CONFIGURATION: ${BUILD_CONFIGURATION:-Release}
+    container_name: erp-auth-api
+    restart: unless-stopped
+    environment:
+      # ASP.NET Core
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT:-Development}
+      - ASPNETCORE_URLS=http://+:80
+      
+      # Database
+      - ConnectionStrings__AuthDb=Host=postgres;Port=5432;Database=erp_auth;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres};Include Error Detail=true
+      
+      # JWT Configuration (use secrets in production!)
+      - Jwt__Key=${JWT_SECRET_KEY:-dev-super-secret-key-change-in-prod-123!}
+      - Jwt__Issuer=erp-modern-core
+      - Jwt__Audience=erp-modern-core-clients
+      - Jwt__ExpirationHours=8
+      
+      # Logging
+      - Logging__LogLevel__Default=Information
+      - Logging__LogLevel__Microsoft.AspNetCore=Warning
+    ports:
+      - "${AUTH_API_PORT:-5281}:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - erp-network
+    labels:
+      - "com.erp-modern.service=auth-api"
+      - "com.erp-modern.version=1.0.0"
+
+  # ================================
+  # pgAdmin (Optional - for DB management)
+  # ================================
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: erp-pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL:-admin@erp-modern.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD:-admin}
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "${PGADMIN_PORT:-5050}:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - erp-network
+    profiles:
+      - tools
+
+# ==================================
+# NETWORKS
+# ==================================
+networks:
+  erp-network:
+    driver: bridge
+    name: erp-network
+
+# ==================================
+# VOLUMES
+# ==================================
+volumes:
+  postgres_data:
+    driver: local
+    name: erp-postgres-data
+  pgadmin_data:
+    driver: local
+    name: erp-pgadmin-data

@@ -126,22 +126,9 @@ python demo/quick_api_test.py
 
 ### **Strategic Benefits**
 - 💰 **Cost Reduction**: AWS Free Tier ($0/month) vs Windows Server licensing
-- ⚡ **Performance**: PostgreSQL vs legacy DBF files
+- ⚡ **Performance**: PostgreSQL vs MYSQL
 - 🛠️ **Maintainability**: Clean Architecture vs monolithic legacy
 - 🌐 **Modern Stack**: .NET 8 vs 20+ year old XHarbour
-
----
-
-## 📊 **Metrics & KPIs**
-
-| Metric | Legacy | Modern | Improvement |
-|--------|--------|--------|-------------|
-| **Authentication Time** | ~5 seconds | ~200ms | 25x faster |
-| **Security Level** | Low (plain text) | High (JWT+PBKDF2) | Military grade |
-| **Scalability** | 1-20 users | 1000+ users | 50x scale |
-| **Monitoring** | None | Real-time | Full visibility |
-| **Deployment** | Manual | Automated | CI/CD ready |
-| **Cost (Annual)** | $12k Windows licenses | $0 AWS Free Tier | $12k saved |
 
 ---
 

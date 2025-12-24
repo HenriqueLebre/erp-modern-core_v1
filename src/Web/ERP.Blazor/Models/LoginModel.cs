@@ -12,7 +12,7 @@ public class LoginModel
     public string Username { get; set; } = string.Empty;
 
     [Required(ErrorMessage = "Senha é obrigatória")]
-    [MinLength(6, ErrorMessage = "Senha deve ter pelo menos 6 caracteres")]
+    [MinLength(4, ErrorMessage = "Senha deve ter pelo menos 4 caracteres")]
     public string Password { get; set; } = string.Empty;
 
     public bool RememberMe { get; set; }

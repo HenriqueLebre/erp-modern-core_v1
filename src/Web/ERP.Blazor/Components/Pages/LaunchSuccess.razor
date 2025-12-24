@@ -1,6 +1,7 @@
 @page "/launch-success"
 @using ERP.Blazor.Services
 @inject IAuthService AuthService
+@inject NavigationManager Navigation
 
 <PageTitle>ERP - Iniciando Sistema</PageTitle>
 
@@ -41,7 +42,7 @@
         if (!isAuth)
         {
             // Redirecionar para login se não estiver autenticado
-            NavigationManager.NavigateTo("/login");
+            Navigation.NavigateTo("/login");        
         }
     }
 }

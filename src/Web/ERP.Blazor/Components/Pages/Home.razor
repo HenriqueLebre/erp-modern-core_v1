@@ -1,7 +1,127 @@
-﻿@page "/"
+@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Sistema ERP - Home</PageTitle>
 
-<h1>Hello, world!</h1>
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-12 text-center mb-5">
+            <h1 class="display-4">🏢 Sistema ERP Moderno</h1>
+            <p class="lead text-muted">Integração entre autenticação moderna e sistema legado</p>
+        </div>
+    </div>
 
-Welcome to your new app.
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-box-arrow-in-right" style="font-size: 3rem; color: #0d6efd;"></i>
+                    </div>
+                    <h3 class="card-title">Login</h3>
+                    <p class="card-text text-muted">
+                        Faça login no sistema com suas credenciais e acesse o ERP legado automaticamente.
+                    </p>
+                    <a href="/login" class="btn btn-primary btn-lg">
+                        <i class="bi bi-box-arrow-in-right me-2"></i>
+                        Fazer Login
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card h-100 shadow-sm">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="bi bi-info-circle" style="font-size: 3rem; color: #198754;"></i>
+                    </div>
+                    <h3 class="card-title">Sobre o Sistema</h3>
+                    <p class="card-text text-muted">
+                        Sistema de autenticação moderna integrado com ERP legado via protocol handler.
+                    </p>
+                    <button class="btn btn-outline-success btn-lg" disabled>
+                        <i class="bi bi-info-circle me-2"></i>
+                        Em Breve
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Status do Sistema</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-database-check" style="font-size: 2rem; color: #198754;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Banco de Dados</h6>
+                                    <small class="text-muted">MySQL conectado</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-shield-check" style="font-size: 2rem; color: #0d6efd;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">Auth API</h6>
+                                    <small class="text-muted">Autenticação ativa</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-window-desktop" style="font-size: 2rem; color: #fd7e14;"></i>
+                                </div>
+                                <div>
+                                    <h6 class="mb-0">ERP Legado</h6>
+                                    <small class="text-muted">Pronto para uso</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="alert alert-info" role="alert">
+                <h5 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>Como Funciona</h5>
+                <hr>
+                <ol class="mb-0">
+                    <li>Acesse a página de <strong>Login</strong></li>
+                    <li>Digite suas credenciais (usuário e senha)</li>
+                    <li>O sistema valida na Auth API</li>
+                    <li>Após autenticação, o ERP legado abre automaticamente via protocol handler</li>
+                    <li>Você já estará logado no sistema!</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .card {
+        transition: transform 0.2s;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .bi {
+        vertical-align: middle;
+    }
+</style>

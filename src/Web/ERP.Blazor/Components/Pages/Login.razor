@@ -4,6 +4,7 @@
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
+@inject ILogger<Login> Logger
 
 <PageTitle>ERP - Login</PageTitle>
 
@@ -14,7 +15,7 @@
             <p class="text-muted">Faça login para continuar</p>
         </div>
 
-        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="login-form">
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm" class="login-form">
             <DataAnnotationsValidator />
             <ValidationSummary class="text-danger" />
 
@@ -96,14 +97,33 @@
 </div>
 
 @code {
-    private LoginModel loginModel = new();
+    [SupplyParameterFromForm]
+    private LoginModel loginModel { get; set; } = new();
+    
     private string errorMessage = string.Empty;
     private bool isLoading = false;
+    private LoginResult? loginResult = null;
+    private bool hasRendered = false;
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            hasRendered = true;
+        }
+        
+        // Se temos um resultado de login pendente, processar após renderização
+        if (hasRendered && loginResult != null && loginResult.Success)
+        {
+            _ = OpenERPAsync();
+        }
+    }
 
     private async Task HandleLogin()
     {
         errorMessage = string.Empty;
         isLoading = true;
+        loginResult = null;
 
         try
         {
@@ -111,24 +131,16 @@
 
             if (result.Success)
             {
-                // Construir URL do protocol handler
-                var launchUrl = $"sysfood://launch?token={Uri.EscapeDataString(result.Token)}&user={Uri.EscapeDataString(result.Username)}";
-
-                // Tentar abrir o ERP legado via protocol handler
-                try
+                Logger.LogInformation("Login successful, preparing to launch ERP");
+                loginResult = result;
+                
+                // Aguardar renderização para usar JSRuntime
+                await InvokeAsync(StateHasChanged);
+                
+                // Tentar abrir imediatamente se já renderizou
+                if (hasRendered)
                 {
-                    await JSRuntime.InvokeVoidAsync("open", launchUrl, "_self");
-                    
-                    // Aguardar um pouco para o launcher iniciar
-                    await Task.Delay(1000);
-                    
-                    // Redirecionar para página de sucesso
-                    NavigationManager.NavigateTo("/launch-success");
-                }
-                catch (Exception ex)
-                {
-                    // Se falhar ao abrir o protocol handler, mostrar instruções
-                    NavigationManager.NavigateTo($"/launch-error?token={Uri.EscapeDataString(result.Token)}&user={Uri.EscapeDataString(result.Username)}");
+                    await OpenERPAsync();
                 }
             }
             else
@@ -138,11 +150,44 @@
         }
         catch (Exception ex)
         {
-            errorMessage = "Erro inesperado ao tentar fazer login. Tente novamente.";
+            errorMessage = $"Erro inesperado ao tentar fazer login: {ex.Message}";
+            Logger.LogError(ex, "Unexpected error during login");
         }
         finally
         {
             isLoading = false;
+        }
+    }
+
+    private async Task OpenERPAsync()
+    {
+        if (loginResult == null || !loginResult.Success) return;
+
+        try
+        {
+            // Construir URL do protocol handler
+            var launchUrl = $"sysfood://launch?token={Uri.EscapeDataString(loginResult.Token)}&user={Uri.EscapeDataString(loginResult.Username)}";
+
+            Logger.LogInformation("Opening ERP with protocol handler: {Url}", launchUrl);
+
+            // Abrir o ERP legado via protocol handler
+            await JSRuntime.InvokeVoidAsync("open", launchUrl, "_self");
+            
+            // Aguardar um pouco para o launcher iniciar
+            await Task.Delay(1000);
+            
+            // Redirecionar para página de sucesso
+            NavigationManager.NavigateTo("/launch-success");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error opening protocol handler");
+            // Se falhar ao abrir o protocol handler, mostrar instruções
+            NavigationManager.NavigateTo($"/launch-error?token={Uri.EscapeDataString(loginResult.Token)}&user={Uri.EscapeDataString(loginResult.Username)}");
+        }
+        finally
+        {
+            loginResult = null; // Limpar para não tentar novamente
         }
     }
 }

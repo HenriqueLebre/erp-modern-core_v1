@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json;
 using ERP.Blazor.Models;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 
 namespace ERP.Blazor.Services;
 
@@ -11,18 +10,15 @@ namespace ERP.Blazor.Services;
 public class AuthService : IAuthService
 {
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly ProtectedSessionStorage _sessionStorage;
     private readonly ILogger<AuthService> _logger;
     private const string TOKEN_KEY = "auth_token";
     private const string USER_KEY = "auth_user";
 
     public AuthService(
         IHttpClientFactory httpClientFactory,
-        ProtectedSessionStorage sessionStorage,
         ILogger<AuthService> logger)
     {
         _httpClientFactory = httpClientFactory;
-        _sessionStorage = sessionStorage;
         _logger = logger;
     }
 
@@ -57,10 +53,6 @@ public class AuthService : IAuthService
                         Role = authResponse.Role,
                         ExpiresAt = authResponse.ExpiresAt
                     };
-
-                    // Armazenar token e informações do usuário
-                    await _sessionStorage.SetAsync(TOKEN_KEY, authResponse.Token);
-                    await _sessionStorage.SetAsync(USER_KEY, loginResult);
 
                     _logger.LogInformation("Login successful for user: {Username}", username);
 
@@ -111,56 +103,28 @@ public class AuthService : IAuthService
         };
     }
 
-    public async Task LogoutAsync()
+    public Task LogoutAsync()
     {
-        try
-        {
-            _logger.LogInformation("Logging out user");
-            await _sessionStorage.DeleteAsync(TOKEN_KEY);
-            await _sessionStorage.DeleteAsync(USER_KEY);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error during logout");
-        }
+        _logger.LogInformation("Logging out user");
+        // Session management will be handled by the component
+        return Task.CompletedTask;
     }
 
-    public async Task<bool> IsAuthenticatedAsync()
+    public Task<bool> IsAuthenticatedAsync()
     {
-        try
-        {
-            var tokenResult = await _sessionStorage.GetAsync<string>(TOKEN_KEY);
-            return tokenResult.Success && !string.IsNullOrEmpty(tokenResult.Value);
-        }
-        catch
-        {
-            return false;
-        }
+        // Authentication state will be managed by the component
+        return Task.FromResult(false);
     }
 
-    public async Task<string?> GetTokenAsync()
+    public Task<string?> GetTokenAsync()
     {
-        try
-        {
-            var result = await _sessionStorage.GetAsync<string>(TOKEN_KEY);
-            return result.Success ? result.Value : null;
-        }
-        catch
-        {
-            return null;
-        }
+        // Token will be managed by the component
+        return Task.FromResult<string?>(null);
     }
 
-    public async Task<LoginResult?> GetCurrentUserAsync()
+    public Task<LoginResult?> GetCurrentUserAsync()
     {
-        try
-        {
-            var result = await _sessionStorage.GetAsync<LoginResult>(USER_KEY);
-            return result.Success ? result.Value : null;
-        }
-        catch
-        {
-            return null;
-        }
+        // User info will be managed by the component
+        return Task.FromResult<LoginResult?>(null);
     }
 }

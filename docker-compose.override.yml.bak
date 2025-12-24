@@ -1,4 +1,4 @@
-﻿services:
+services:
   auth-api:
     build:
       args:
@@ -6,15 +6,17 @@
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:80
+    # volumes:
+    #   - ./src/Modules/Auth/Auth.API:/app:ro
     ports:
       - "5281:80"
 
   postgres:
     ports:
       - "5433:5432"
-    command:
+    command: 
       - "postgres"
       - "-c"
       - "log_statement=all"
       - "-c"
-      - "log_connections=on"
+      - "log_connections=on"agora

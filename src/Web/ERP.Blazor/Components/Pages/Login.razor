@@ -1,0 +1,148 @@
+@page "/login"
+@using ERP.Blazor.Models
+@using ERP.Blazor.Services
+@inject IAuthService AuthService
+@inject NavigationManager NavigationManager
+@inject IJSRuntime JSRuntime
+
+<PageTitle>ERP - Login</PageTitle>
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Sistema ERP</h2>
+            <p class="text-muted">Faça login para continuar</p>
+        </div>
+
+        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" class="login-form">
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+
+            @if (!string.IsNullOrEmpty(errorMessage))
+            {
+                <div class="alert alert-danger" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill"></i> @errorMessage
+                </div>
+            }
+
+            @if (isLoading)
+            {
+                <div class="alert alert-info" role="alert">
+                    <div class="spinner-border spinner-border-sm me-2" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    Autenticando...
+                </div>
+            }
+
+            <div class="mb-3">
+                <label for="username" class="form-label">Usuário</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <InputText id="username" 
+                               @bind-Value="loginModel.Username" 
+                               class="form-control" 
+                               placeholder="Digite seu usuário"
+                               disabled="@isLoading" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Username)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Senha</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
+                    <InputText id="password" 
+                               @bind-Value="loginModel.Password" 
+                               type="password" 
+                               class="form-control" 
+                               placeholder="Digite sua senha"
+                               disabled="@isLoading" />
+                </div>
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <div class="mb-3 form-check">
+                <InputCheckbox id="rememberMe" 
+                              @bind-Value="loginModel.RememberMe" 
+                              class="form-check-input"
+                              disabled="@isLoading" />
+                <label class="form-check-label" for="rememberMe">
+                    Lembrar-me
+                </label>
+            </div>
+
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary btn-lg" disabled="@isLoading">
+                    @if (isLoading)
+                    {
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        <span>Entrando...</span>
+                    }
+                    else
+                    {
+                        <span>Entrar</span>
+                    }
+                </button>
+            </div>
+        </EditForm>
+
+        <div class="login-footer">
+            <p class="text-muted text-center mt-3 mb-0">
+                <small>Versão 1.0.0 | © 2024 Sistema ERP</small>
+            </p>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new();
+    private string errorMessage = string.Empty;
+    private bool isLoading = false;
+
+    private async Task HandleLogin()
+    {
+        errorMessage = string.Empty;
+        isLoading = true;
+
+        try
+        {
+            var result = await AuthService.LoginAsync(loginModel.Username, loginModel.Password);
+
+            if (result.Success)
+            {
+                // Construir URL do protocol handler
+                var launchUrl = $"sysfood://launch?token={Uri.EscapeDataString(result.Token)}&user={Uri.EscapeDataString(result.Username)}";
+
+                // Tentar abrir o ERP legado via protocol handler
+                try
+                {
+                    await JSRuntime.InvokeVoidAsync("open", launchUrl, "_self");
+                    
+                    // Aguardar um pouco para o launcher iniciar
+                    await Task.Delay(1000);
+                    
+                    // Redirecionar para página de sucesso
+                    NavigationManager.NavigateTo("/launch-success");
+                }
+                catch (Exception ex)
+                {
+                    // Se falhar ao abrir o protocol handler, mostrar instruções
+                    NavigationManager.NavigateTo($"/launch-error?token={Uri.EscapeDataString(result.Token)}&user={Uri.EscapeDataString(result.Username)}");
+                }
+            }
+            else
+            {
+                errorMessage = result.ErrorMessage;
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erro inesperado ao tentar fazer login. Tente novamente.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

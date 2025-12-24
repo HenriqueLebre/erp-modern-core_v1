@@ -1,0 +1,47 @@
+@page "/launch-success"
+@using ERP.Blazor.Services
+@inject IAuthService AuthService
+
+<PageTitle>ERP - Iniciando Sistema</PageTitle>
+
+<div class="launch-container">
+    <div class="launch-card">
+        <div class="launch-icon success">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        
+        <h2>Login realizado com sucesso!</h2>
+        <p class="lead">O sistema ERP legado está sendo iniciado...</p>
+        
+        <div class="launch-status">
+            <div class="spinner-border text-success mb-3" role="status">
+                <span class="visually-hidden">Carregando...</span>
+            </div>
+            <p class="text-muted">Aguarde enquanto o Sysfood.exe é aberto</p>
+        </div>
+
+        <div class="alert alert-info mt-4" role="alert">
+            <i class="bi bi-info-circle"></i>
+            <strong>Importante:</strong> Se o sistema não abrir automaticamente, verifique se o SysfoodLauncher está instalado.
+        </div>
+
+        <div class="mt-4">
+            <a href="/login" class="btn btn-outline-primary">
+                <i class="bi bi-arrow-left"></i> Voltar ao Login
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        // Verificar se usuário está autenticado
+        var isAuth = await AuthService.IsAuthenticatedAsync();
+        if (!isAuth)
+        {
+            // Redirecionar para login se não estiver autenticado
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+}

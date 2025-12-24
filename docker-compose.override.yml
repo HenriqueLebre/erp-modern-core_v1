@@ -19,4 +19,4 @@ services:
       - "-c"
       - "log_statement=all"
       - "-c"
-      - "log_connections=on"
+      - "log_connections=on"agora

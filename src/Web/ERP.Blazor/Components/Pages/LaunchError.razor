@@ -1,0 +1,120 @@
+@page "/launch-error"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager NavigationManager
+
+<PageTitle>ERP - Erro ao Iniciar</PageTitle>
+
+<div class="launch-container">
+    <div class="launch-card">
+        <div class="launch-icon error">
+            <i class="bi bi-exclamation-triangle"></i>
+        </div>
+        
+        <h2>Não foi possível iniciar o ERP</h2>
+        <p class="lead">O protocolo sysfood:// não está registrado no sistema</p>
+        
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-info-circle"></i>
+            <strong>O que fazer?</strong>
+            <ol class="mb-0 mt-2 text-start">
+                <li>Baixe e instale o SysfoodLauncher</li>
+                <li>Execute o instalador como Administrador</li>
+                <li>Reinicie o navegador</li>
+                <li>Tente fazer login novamente</li>
+            </ol>
+        </div>
+
+        <div class="manual-launch mt-4 p-3 bg-light rounded">
+            <h5>Ou inicie manualmente:</h5>
+            <p class="text-muted mb-2">Copie o comando abaixo e cole no terminal:</p>
+            <div class="input-group">
+                <input type="text" 
+                       class="form-control font-monospace" 
+                       value="@launchCommand" 
+                       readonly />
+                <button class="btn btn-outline-secondary" 
+                        type="button" 
+                        @onclick="CopyToClipboard">
+                    <i class="bi bi-clipboard"></i> Copiar
+                </button>
+            </div>
+            @if (copied)
+            {
+                <small class="text-success"><i class="bi bi-check"></i> Copiado!</small>
+            }
+        </div>
+
+        <div class="mt-4">
+            <a href="/login" class="btn btn-primary me-2">
+                <i class="bi bi-arrow-left"></i> Voltar ao Login
+            </a>
+            <button class="btn btn-outline-secondary" @onclick="RetryLaunch">
+                <i class="bi bi-arrow-clockwise"></i> Tentar Novamente
+            </button>
+        </div>
+
+        <div class="mt-4 pt-4 border-top">
+            <h6>Links Úteis:</h6>
+            <a href="#" class="btn btn-sm btn-outline-primary me-2">
+                <i class="bi bi-download"></i> Baixar SysfoodLauncher
+            </a>
+            <a href="#" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-question-circle"></i> Ajuda
+            </a>
+        </div>
+    </div>
+</div>
+
+@code {
+    private string token = string.Empty;
+    private string username = string.Empty;
+    private string launchCommand = string.Empty;
+    private bool copied = false;
+
+    [Inject] private IJSRuntime JSRuntime { get; set; } = default!;
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(NavigationManager.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+
+        if (query.TryGetValue("token", out var tokenValue))
+            token = tokenValue.ToString();
+
+        if (query.TryGetValue("user", out var userValue))
+            username = userValue.ToString();
+
+        launchCommand = $"sysfood://launch?token={Uri.EscapeDataString(token)}&user={Uri.EscapeDataString(username)}";
+    }
+
+    private async Task CopyToClipboard()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", launchCommand);
+            copied = true;
+            
+            // Reset após 2 segundos
+            await Task.Delay(2000);
+            copied = false;
+        }
+        catch
+        {
+            // Fallback se clipboard API não estiver disponível
+        }
+    }
+
+    private async Task RetryLaunch()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("open", launchCommand, "_self");
+            await Task.Delay(1000);
+            NavigationManager.NavigateTo("/launch-success");
+        }
+        catch
+        {
+            // Se ainda falhar, permanecer na página de erro
+        }
+    }
+}

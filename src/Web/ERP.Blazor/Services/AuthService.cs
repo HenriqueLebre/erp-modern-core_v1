@@ -1,5 +1,4 @@
 using System.Net.Http.Json;
-using System.Text.Json;
 using ERP.Blazor.Models;
 
 namespace ERP.Blazor.Services;
@@ -11,8 +10,6 @@ public class AuthService : IAuthService
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILogger<AuthService> _logger;
-    private const string TOKEN_KEY = "auth_token";
-    private const string USER_KEY = "auth_user";
 
     public AuthService(
         IHttpClientFactory httpClientFactory,
@@ -106,25 +103,21 @@ public class AuthService : IAuthService
     public Task LogoutAsync()
     {
         _logger.LogInformation("Logging out user");
-        // Session management will be handled by the component
         return Task.CompletedTask;
     }
 
     public Task<bool> IsAuthenticatedAsync()
     {
-        // Authentication state will be managed by the component
         return Task.FromResult(false);
     }
 
     public Task<string?> GetTokenAsync()
     {
-        // Token will be managed by the component
         return Task.FromResult<string?>(null);
     }
 
     public Task<LoginResult?> GetCurrentUserAsync()
     {
-        // User info will be managed by the component
         return Task.FromResult<LoginResult?>(null);
     }
 }

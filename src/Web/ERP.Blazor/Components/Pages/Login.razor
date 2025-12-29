@@ -1,99 +1,84 @@
 @page "/login"
+@layout AuthLayout
 @using ERP.Blazor.Models
 @using ERP.Blazor.Services
 @inject IAuthService AuthService
 @inject NavigationManager NavigationManager
 @inject IJSRuntime JSRuntime
 @inject ILogger<Login> Logger
+@rendermode InteractiveServer
 
-<PageTitle>ERP - Login</PageTitle>
+<PageTitle>ModernERP - Entrar</PageTitle>
 
-<div class="login-container">
-    <div class="login-card">
-        <div class="login-header">
-            <h2>Sistema ERP</h2>
-            <p class="text-muted">Faça login para continuar</p>
+<div class="auth-card">
+    <header class="auth-card-header">
+        <h2>Bem-vindo de volta</h2>
+        <p>Entre com suas credenciais para continuar</p>
+    </header>
+
+    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm">
+        <DataAnnotationsValidator />
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger">
+                <span class="alert-icon">⚠️</span>
+                <span class="alert-content">@errorMessage</span>
+            </div>
+        }
+
+        <div class="form-group">
+            <label class="form-label" for="username">Usuário</label>
+            <div class="form-input-wrapper">
+                <span class="input-icon">👤</span>
+                <InputText id="username" 
+                           @bind-Value="loginModel.Username" 
+                           class="form-input" 
+                           placeholder="Digite seu usuário"
+                           disabled="@isLoading"
+                           autocomplete="username" />
+            </div>
+            <ValidationMessage For="@(() => loginModel.Username)" class="validation-message" />
         </div>
 
-        <EditForm Model="@loginModel" OnValidSubmit="HandleLogin" FormName="loginForm" class="login-form">
-            <DataAnnotationsValidator />
-            <ValidationSummary class="text-danger" />
+        <div class="form-group">
+            <label class="form-label" for="password">Senha</label>
+            <div class="form-input-wrapper">
+                <span class="input-icon">🔒</span>
+                <InputText id="password" 
+                           @bind-Value="loginModel.Password" 
+                           type="password" 
+                           class="form-input" 
+                           placeholder="Digite sua senha"
+                           disabled="@isLoading"
+                           autocomplete="current-password" />
+            </div>
+            <ValidationMessage For="@(() => loginModel.Password)" class="validation-message" />
+        </div>
 
-            @if (!string.IsNullOrEmpty(errorMessage))
-            {
-                <div class="alert alert-danger" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i> @errorMessage
-                </div>
-            }
+        <div class="form-group">
+            <label class="form-checkbox">
+                <InputCheckbox @bind-Value="loginModel.RememberMe" disabled="@isLoading" />
+                <span class="form-checkbox-label">Lembrar-me neste dispositivo</span>
+            </label>
+        </div>
 
+        <button type="submit" class="btn btn-primary btn-full btn-lg" disabled="@isLoading">
             @if (isLoading)
             {
-                <div class="alert alert-info" role="alert">
-                    <div class="spinner-border spinner-border-sm me-2" role="status">
-                        <span class="visually-hidden">Carregando...</span>
-                    </div>
-                    Autenticando...
-                </div>
+                <span class="spinner"></span>
+                <span>Entrando...</span>
             }
+            else
+            {
+                <span>Entrar</span>
+            }
+        </button>
+    </EditForm>
 
-            <div class="mb-3">
-                <label for="username" class="form-label">Usuário</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-person"></i></span>
-                    <InputText id="username" 
-                               @bind-Value="loginModel.Username" 
-                               class="form-control" 
-                               placeholder="Digite seu usuário"
-                               disabled="@isLoading" />
-                </div>
-                <ValidationMessage For="@(() => loginModel.Username)" />
-            </div>
-
-            <div class="mb-3">
-                <label for="password" class="form-label">Senha</label>
-                <div class="input-group">
-                    <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                    <InputText id="password" 
-                               @bind-Value="loginModel.Password" 
-                               type="password" 
-                               class="form-control" 
-                               placeholder="Digite sua senha"
-                               disabled="@isLoading" />
-                </div>
-                <ValidationMessage For="@(() => loginModel.Password)" />
-            </div>
-
-            <div class="mb-3 form-check">
-                <InputCheckbox id="rememberMe" 
-                              @bind-Value="loginModel.RememberMe" 
-                              class="form-check-input"
-                              disabled="@isLoading" />
-                <label class="form-check-label" for="rememberMe">
-                    Lembrar-me
-                </label>
-            </div>
-
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary btn-lg" disabled="@isLoading">
-                    @if (isLoading)
-                    {
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        <span>Entrando...</span>
-                    }
-                    else
-                    {
-                        <span>Entrar</span>
-                    }
-                </button>
-            </div>
-        </EditForm>
-
-        <div class="login-footer">
-            <p class="text-muted text-center mt-3 mb-0">
-                <small>Versão 1.0.0 | © 2024 Sistema ERP</small>
-            </p>
-        </div>
-    </div>
+    <footer class="auth-footer">
+        <p>ModernERP v2.0 © @DateTime.Now.Year</p>
+    </footer>
 </div>
 
 @code {
@@ -112,7 +97,6 @@
             hasRendered = true;
         }
         
-        // Se temos um resultado de login pendente, processar após renderização
         if (hasRendered && loginResult != null && loginResult.Success)
         {
             _ = OpenERPAsync();
@@ -134,10 +118,8 @@
                 Logger.LogInformation("Login successful, preparing to launch ERP");
                 loginResult = result;
                 
-                // Aguardar renderização para usar JSRuntime
                 await InvokeAsync(StateHasChanged);
                 
-                // Tentar abrir imediatamente se já renderizou
                 if (hasRendered)
                 {
                     await OpenERPAsync();
@@ -165,29 +147,24 @@
 
         try
         {
-            // Construir URL do protocol handler
             var launchUrl = $"sysfood://launch?token={Uri.EscapeDataString(loginResult.Token)}&user={Uri.EscapeDataString(loginResult.Username)}";
 
             Logger.LogInformation("Opening ERP with protocol handler: {Url}", launchUrl);
 
-            // Abrir o ERP legado via protocol handler
             await JSRuntime.InvokeVoidAsync("open", launchUrl, "_self");
             
-            // Aguardar um pouco para o launcher iniciar
             await Task.Delay(1000);
             
-            // Redirecionar para página de sucesso
             NavigationManager.NavigateTo("/launch-success");
         }
         catch (Exception ex)
         {
             Logger.LogError(ex, "Error opening protocol handler");
-            // Se falhar ao abrir o protocol handler, mostrar instruções
             NavigationManager.NavigateTo($"/launch-error?token={Uri.EscapeDataString(loginResult.Token)}&user={Uri.EscapeDataString(loginResult.Username)}");
         }
         finally
         {
-            loginResult = null; // Limpar para não tentar novamente
+            loginResult = null;
         }
     }
 }

@@ -1,127 +1,91 @@
 @page "/"
 
-<PageTitle>Sistema ERP - Home</PageTitle>
+<PageTitle>ModernERP - Sistema de Gestão</PageTitle>
 
-<div class="container mt-5">
-    <div class="row">
-        <div class="col-md-12 text-center mb-5">
-            <h1 class="display-4">🏢 Sistema ERP Moderno</h1>
-            <p class="lead text-muted">Integração entre autenticação moderna e sistema legado</p>
-        </div>
+<section class="hero">
+    <span class="hero-badge">
+        <span>🚀</span>
+        <span>Sistema Moderno de ERP</span>
+    </span>
+    
+    <h1>Gestão Empresarial Simplificada</h1>
+    
+    <p>
+        Integração moderna entre autenticação segura e seu sistema legado.
+        Acesse o ERP de forma rápida, segura e automatizada.
+    </p>
+
+    <div class="hero-actions">
+        <a href="/login" class="btn btn-primary btn-lg">
+            <span>Fazer Login</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14"></path>
+                <path d="m12 5 7 7-7 7"></path>
+            </svg>
+        </a>
     </div>
+</section>
 
-    <div class="row g-4">
-        <div class="col-md-6">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-box-arrow-in-right" style="font-size: 3rem; color: #0d6efd;"></i>
-                    </div>
-                    <h3 class="card-title">Login</h3>
-                    <p class="card-text text-muted">
-                        Faça login no sistema com suas credenciais e acesse o ERP legado automaticamente.
-                    </p>
-                    <a href="/login" class="btn btn-primary btn-lg">
-                        <i class="bi bi-box-arrow-in-right me-2"></i>
-                        Fazer Login
-                    </a>
-                </div>
-            </div>
-        </div>
+<div class="cards-grid">
+    <article class="card">
+        <div class="card-icon card-icon-primary">🔐</div>
+        <h3>Autenticação Segura</h3>
+        <p>Login com validação JWT e integração transparente com o sistema legado.</p>
+        <a href="/login" class="btn btn-ghost">
+            Acessar Sistema →
+        </a>
+    </article>
 
-        <div class="col-md-6">
-            <div class="card h-100 shadow-sm">
-                <div class="card-body text-center">
-                    <div class="mb-3">
-                        <i class="bi bi-info-circle" style="font-size: 3rem; color: #198754;"></i>
-                    </div>
-                    <h3 class="card-title">Sobre o Sistema</h3>
-                    <p class="card-text text-muted">
-                        Sistema de autenticação moderna integrado com ERP legado via protocol handler.
-                    </p>
-                    <button class="btn btn-outline-success btn-lg" disabled>
-                        <i class="bi bi-info-circle me-2"></i>
-                        Em Breve
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-5">
-        <div class="col-md-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="mb-0"><i class="bi bi-gear me-2"></i>Status do Sistema</h5>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-4 mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="bi bi-database-check" style="font-size: 2rem; color: #198754;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Banco de Dados</h6>
-                                    <small class="text-muted">MySQL conectado</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="bi bi-shield-check" style="font-size: 2rem; color: #0d6efd;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">Auth API</h6>
-                                    <small class="text-muted">Autenticação ativa</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4 mb-3">
-                            <div class="d-flex align-items-center">
-                                <div class="me-3">
-                                    <i class="bi bi-window-desktop" style="font-size: 2rem; color: #fd7e14;"></i>
-                                </div>
-                                <div>
-                                    <h6 class="mb-0">ERP Legado</h6>
-                                    <small class="text-muted">Pronto para uso</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="row mt-4">
-        <div class="col-md-12">
-            <div class="alert alert-info" role="alert">
-                <h5 class="alert-heading"><i class="bi bi-lightbulb me-2"></i>Como Funciona</h5>
-                <hr>
-                <ol class="mb-0">
-                    <li>Acesse a página de <strong>Login</strong></li>
-                    <li>Digite suas credenciais (usuário e senha)</li>
-                    <li>O sistema valida na Auth API</li>
-                    <li>Após autenticação, o ERP legado abre automaticamente via protocol handler</li>
-                    <li>Você já estará logado no sistema!</li>
-                </ol>
-            </div>
-        </div>
-    </div>
+    <article class="card">
+        <div class="card-icon card-icon-success">⚡</div>
+        <h3>Abertura Automática</h3>
+        <p>Após autenticação, o ERP é iniciado automaticamente via protocol handler.</p>
+    </article>
 </div>
 
-<style>
-    .card {
-        transition: transform 0.2s;
-    }
-    
-    .card:hover {
-        transform: translateY(-5px);
-    }
-    
-    .bi {
-        vertical-align: middle;
-    }
-</style>
+<section class="status-section">
+    <header class="status-section-header">
+        <span>📡</span>
+        <h2>Status do Sistema</h2>
+    </header>
+
+    <div class="status-grid">
+        <div class="status-item">
+            <span class="status-item-icon online">🗄️</span>
+            <div class="status-item-info">
+                <h4>Banco de Dados</h4>
+                <p>MySQL conectado</p>
+            </div>
+        </div>
+        
+        <div class="status-item">
+            <span class="status-item-icon online">🔑</span>
+            <div class="status-item-info">
+                <h4>Auth API</h4>
+                <p>Autenticação ativa</p>
+            </div>
+        </div>
+        
+        <div class="status-item">
+            <span class="status-item-icon online">🖥️</span>
+            <div class="status-item-info">
+                <h4>ERP Legado</h4>
+                <p>Pronto para uso</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="info-box">
+    <header class="info-box-header">
+        <span>💡</span>
+        <span>Como Funciona</span>
+    </header>
+    <ol>
+        <li>Acesse a página de <strong>Login</strong></li>
+        <li>Digite suas credenciais (usuário e senha)</li>
+        <li>O sistema valida na Auth API</li>
+        <li>Após autenticação, o ERP legado abre automaticamente</li>
+        <li>Você já estará logado no sistema!</li>
+    </ol>
+</section>

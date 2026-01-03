@@ -25,6 +25,9 @@ public static class DependencyInjection
         // Hasher de senha (PBKDF2 como padrão; legado é verificado no fluxo de login)
         services.AddScoped<IPasswordHasher, Pbkdf2PasswordHasher>();
 
+        // Validador de senha
+        services.AddScoped<IPasswordValidator, PasswordValidator>();
+
         // Gerador de JWT
         services.AddSingleton<IJwtTokenGenerator, JwtTokenGenerator>();
 

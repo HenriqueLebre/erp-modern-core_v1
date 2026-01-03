@@ -12,7 +12,34 @@ using AspNetCoreRateLimit;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configurar op��es de JWT
+// Load JWT configuration from environment variables (secure)
+var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY") 
+    ?? builder.Configuration["Jwt:Key"];
+
+if (string.IsNullOrEmpty(jwtKey) || jwtKey.Length < 32)
+{
+    throw new InvalidOperationException(
+        "JWT Secret Key must be set via JWT_SECRET_KEY environment variable and be at least 32 characters long. " +
+        "Generate one using: openssl rand -base64 64");
+}
+
+// Override configuration with environment variable
+builder.Configuration["Jwt:Key"] = jwtKey;
+
+// Load connection string from environment variable
+var connectionString = Environment.GetEnvironmentVariable("AUTH_DB_CONNECTION_STRING")
+    ?? Environment.GetEnvironmentVariable("AUTH_DB_CONNECTION_STRING_DEV")
+    ?? builder.Configuration.GetConnectionString("AuthDb");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException(
+        "Database connection string must be set via AUTH_DB_CONNECTION_STRING environment variable.");
+}
+
+builder.Configuration["ConnectionStrings:AuthDb"] = connectionString;
+
+// Configurar opções de JWT
 builder.Services.Configure<JwtOptions>(builder.Configuration.GetSection("Jwt"));
 
 // Rate limiting configuration
@@ -108,6 +135,43 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Configurar Security Headers
+app.Use(async (context, next) =>
+{
+    // Prevenir clickjacking
+    context.Response.Headers.Add("X-Frame-Options", "DENY");
+    
+    // Prevenir MIME type sniffing
+    context.Response.Headers.Add("X-Content-Type-Options", "nosniff");
+    
+    // Proteção XSS (navegadores modernos)
+    context.Response.Headers.Add("X-XSS-Protection", "1; mode=block");
+    
+    // Content Security Policy
+    context.Response.Headers.Add("Content-Security-Policy", 
+        "default-src 'self'; frame-ancestors 'none'; form-action 'self'");
+    
+    // Referrer Policy
+    context.Response.Headers.Add("Referrer-Policy", "strict-origin-when-cross-origin");
+    
+    // Permissions Policy
+    context.Response.Headers.Add("Permissions-Policy", 
+        "geolocation=(), microphone=(), camera=()");
+    
+    // HSTS (HTTP Strict Transport Security) - apenas em produção
+    if (!app.Environment.IsDevelopment())
+    {
+        context.Response.Headers.Add("Strict-Transport-Security", 
+            "max-age=31536000; includeSubDomains; preload");
+    }
+    
+    // Remover headers que revelam informação do servidor
+    context.Response.Headers.Remove("Server");
+    context.Response.Headers.Remove("X-Powered-By");
+    
+    await next();
+});
 
 // SEED: criar usu�rio admin/admin em mem�ria
 using (var scope = app.Services.CreateScope())

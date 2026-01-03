@@ -11,6 +11,8 @@ public class User
     public string Email { get; private set; } = default!;
     public string Role { get; private set; } = default!;
     public bool IsActive { get; private set; }
+    public int FailedLoginAttempts { get; private set; } = 0;
+    public DateTime? LockedUntil { get; private set; }
 
     // Construtor usado para criar um novo usuário
     public User(string username, string passwordHash, string email, string role, bool isActive = true)
@@ -43,5 +45,33 @@ public class User
             throw new ArgumentException("Role cannot be empty.", nameof(newRole));
 
         Role = newRole;
+    }
+
+    public void RecordFailedLogin()
+    {
+        FailedLoginAttempts++;
+        
+        // Bloquear conta após 5 tentativas falhas
+        if (FailedLoginAttempts >= 5)
+        {
+            LockedUntil = DateTime.UtcNow.AddMinutes(15); // Bloquear por 15 minutos
+        }
+    }
+
+    public void ResetFailedLoginAttempts()
+    {
+        FailedLoginAttempts = 0;
+        LockedUntil = null;
+    }
+
+    public bool IsLocked()
+    {
+        return LockedUntil.HasValue && LockedUntil.Value > DateTime.UtcNow;
+    }
+
+    public void UnlockAccount()
+    {
+        LockedUntil = null;
+        FailedLoginAttempts = 0;
     }
 }

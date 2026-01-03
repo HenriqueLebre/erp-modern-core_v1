@@ -44,6 +44,13 @@ tools/
 *.generated.json
 SECURITY.md
 
+# Environment variables (IMPORTANT: Never commit .env files)
+.env
+.env.local
+.env.*.local
+*.env
+!.env.example
+
 # Publish
 publish/
 *.pubxml

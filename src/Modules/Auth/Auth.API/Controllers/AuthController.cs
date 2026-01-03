@@ -23,6 +23,9 @@ public class AuthController : ControllerBase
     [HttpPost("login")]
     public async Task<ActionResult<LoginResponse>> Login([FromBody] LoginCommand command)
     {
+        // Adicionar um pequeno delay para prevenir timing attacks na enumeração de usuários
+        await Task.Delay(Random.Shared.Next(50, 150));
+        
         var result = await _mediator.Send(command);
 
         if (!result.Success)
@@ -91,13 +94,14 @@ public class AuthController : ControllerBase
                 expires = claims.GetValueOrDefault("exp")
             });
         }
-        catch (SecurityTokenException ex)
+        catch (SecurityTokenException)
         {
-            return Ok(new { success = true, valid = false, message = "Token validation failed", error = ex.Message });
+            return Ok(new { success = true, valid = false, message = "Token validation failed" });
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            return StatusCode(500, new { success = false, message = "Internal server error", error = ex.Message });
+            // Não vazar detalhes de erro interno
+            return StatusCode(500, new { success = false, message = "Internal server error" });
         }
     }
 }

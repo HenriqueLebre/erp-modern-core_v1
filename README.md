@@ -1,3 +1,33 @@
+# 🏗️ ERP Modern Core (v1 - Archived)
+
+> ⚠️ **This is an archived version.** See the improved implementation at:  
+> **https://github.com/HenriqueLebre/erp-legacy-modernization**
+
+## Why was this archived?
+
+This repository represents my initial exploration of legacy ERP modernization using the Strangler Fig pattern. After implementing and testing the core concepts, I decided to refactor the project with:
+
+- ✅ Cleaner architecture and structure
+- ✅ Comprehensive test coverage (80%+)
+- ✅ Production-ready CI/CD pipeline
+- ✅ AWS infrastructure as code
+- ✅ Better documentation and showcase
+
+**What I learned from this version:**
+- XHarbour to .NET 8 integration patterns
+- JWT authentication with legacy password migration
+- Docker containerization
+- Clean Architecture implementation
+
+**This repo remains available for:**
+- Reference and learning
+- Consulting old implementation decisions
+- Understanding my development process
+
+---
+
+## Original Documentation
+
 # 🎯 **ERP Modernization Portfolio Showcase**
 
 ## **Complete Legacy → Cloud Migration Demo**
